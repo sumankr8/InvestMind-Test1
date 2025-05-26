@@ -420,3 +420,5 @@ const Portfolio: React.FC = () => {
 };
 
 export default Portfolio;
+
+export default Portfolio
