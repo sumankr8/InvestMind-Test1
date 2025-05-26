@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, Area } from 'recharts';
-import { Download, Plus, Brain, Filter, TrendingUp, TrendingDown, DollarSign, Percent, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Download, Plus, Brain, Filter, TrendingUp, TrendingDown, DollarSign, Percent, Calendar, ArrowUpRight, ArrowDownRight, ChevronRight } from 'lucide-react';
 
 const mockPortfolios = [
   { id: 1, name: 'Growth Portfolio', type: 'Stocks', performance: 12.5, allocation: 45 },
@@ -40,12 +40,13 @@ performanceData = Array.from({ length: 12 }, (_, i) => {
 const Portfolio: React.FC = () => {
   const [selectedPortfolio, setSelectedPortfolio] = useState('all');
   const [timeRange, setTimeRange] = useState('1Y');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   const totalInvested = mockHoldings.reduce((sum, holding) => sum + holding.invested, 0);
   const currentValue = mockHoldings.reduce((sum, holding) => sum + holding.currentValue, 0);
   const netProfitLoss = currentValue - totalInvested;
   const netProfitLossPercentage = (netProfitLoss / totalInvested) * 100;
-  const dailyChange = 2345.67; // Mock daily change
+  const dailyChange = 2345.67;
   const dailyChangePercentage = (dailyChange / currentValue) * 100;
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -99,11 +100,53 @@ const Portfolio: React.FC = () => {
     </div>
   );
 
+  const MobileHoldingCard = ({ holding }) => {
+    const profitLoss = holding.currentValue - holding.invested;
+    const profitLossPercentage = (profitLoss / holding.invested) * 100;
+
+    return (
+      <div className="bg-gray-750 rounded-lg p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="bg-gray-700 rounded-md py-1 px-2">
+              <span className="font-medium">{holding.symbol}</span>
+            </div>
+            <span className="text-sm text-gray-300">{holding.name}</span>
+          </div>
+          <span className={`text-sm font-mono ${profitLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            {profitLoss >= 0 ? '+' : ''}{profitLossPercentage.toFixed(2)}%
+          </span>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div>
+            <p className="text-gray-400">Quantity</p>
+            <p className="font-mono">{holding.quantity}</p>
+          </div>
+          <div>
+            <p className="text-gray-400">Avg Price</p>
+            <p className="font-mono">${holding.avgBuyPrice.toFixed(2)}</p>
+          </div>
+          <div>
+            <p className="text-gray-400">Current Value</p>
+            <p className="font-mono">${holding.currentValue.toFixed(2)}</p>
+          </div>
+          <div>
+            <p className="text-gray-400">P/L</p>
+            <p className={`font-mono ${profitLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              ${Math.abs(profitLoss).toFixed(2)}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <main className="flex-grow py-8 px-4 md:px-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Portfolio Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
+        {/* Portfolio Summary Cards - Now more responsive */}
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <StatCard
             title="Total Portfolio Value"
             value={new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(currentValue)}
@@ -133,16 +176,18 @@ const Portfolio: React.FC = () => {
           />
         </div>
 
-        {/* Portfolio Performance Chart */}
-        <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
+        {/* Performance Chart - Responsive height */}
+        <div className="bg-gray-800 rounded-xl border border-gray-700 p-4 md:p-6">
+          <div className="flex flex-col space-y-4 mb-6">
             <div>
               <h2 className="text-xl font-bold mb-1">Portfolio Performance</h2>
               <p className="text-gray-400 text-sm">Track your portfolio's growth over time</p>
             </div>
-            <TimeRangeSelector />
+            <div className="flex justify-end">
+              <TimeRangeSelector />
+            </div>
           </div>
-          <div className="h-80">
+          <div className="h-60 md:h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={performanceData}>
                 <defs>
@@ -152,10 +197,17 @@ const Portfolio: React.FC = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="month" stroke="#9CA3AF" />
+                <XAxis 
+                  dataKey="month" 
+                  stroke="#9CA3AF"
+                  tick={{ fontSize: 12 }}
+                  interval={'preserveStartEnd'}
+                />
                 <YAxis 
                   stroke="#9CA3AF"
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  tick={{ fontSize: 12 }}
+                  width={60}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Area
@@ -171,20 +223,20 @@ const Portfolio: React.FC = () => {
           </div>
         </div>
 
-        {/* Portfolio Distribution */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Portfolio Distribution - Responsive grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Asset Allocation */}
-          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
+          <div className="bg-gray-800 rounded-xl border border-gray-700 p-4 md:p-6">
             <h3 className="text-lg font-semibold mb-6">Asset Allocation</h3>
-            <div className="h-64">
+            <div className="h-48 md:h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={sectorData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
+                    innerRadius={window.innerWidth < 768 ? 40 : 60}
+                    outerRadius={window.innerWidth < 768 ? 60 : 80}
                     paddingAngle={5}
                     dataKey="value"
                   >
@@ -197,7 +249,7 @@ const Portfolio: React.FC = () => {
                     verticalAlign="bottom" 
                     height={36}
                     formatter={(value, entry) => (
-                      <span className="text-gray-300">{value}</span>
+                      <span className="text-gray-300 text-sm">{value}</span>
                     )}
                   />
                 </PieChart>
@@ -206,9 +258,9 @@ const Portfolio: React.FC = () => {
           </div>
 
           {/* Top Performers */}
-          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
+          <div className="bg-gray-800 rounded-xl border border-gray-700 p-4 md:p-6">
             <h3 className="text-lg font-semibold mb-6">Top Performers</h3>
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {mockHoldings
                 .sort((a, b) => ((b.currentValue - b.invested) / b.invested) - ((a.currentValue - a.invested) / a.invested))
                 .slice(0, 3)
@@ -219,13 +271,13 @@ const Portfolio: React.FC = () => {
                     <div key={holding.symbol} className="flex items-center justify-between p-3 bg-gray-750 rounded-lg">
                       <div className="flex items-center space-x-3">
                         <div className="bg-gray-700 rounded-md py-1 px-2">
-                          <span className="font-medium">{holding.symbol}</span>
+                          <span className="font-medium text-sm md:text-base">{holding.symbol}</span>
                         </div>
-                        <span className="text-gray-300">{holding.name}</span>
+                        <span className="text-gray-300 text-sm md:text-base">{holding.name}</span>
                       </div>
                       <div className="text-right">
-                        <p className="text-green-500">+{profitPercentage.toFixed(2)}%</p>
-                        <p className="text-sm text-gray-400">${profit.toFixed(2)}</p>
+                        <p className="text-green-500 text-sm md:text-base">+{profitPercentage.toFixed(2)}%</p>
+                        <p className="text-xs md:text-sm text-gray-400">${profit.toFixed(2)}</p>
                       </div>
                     </div>
                   );
@@ -234,27 +286,27 @@ const Portfolio: React.FC = () => {
           </div>
 
           {/* AI Insights */}
-          <div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
+          <div className="bg-gray-800 rounded-xl border border-gray-700 p-4 md:p-6">
             <div className="flex items-center space-x-3 mb-6">
               <Brain className="h-6 w-6 text-blue-500" />
               <h3 className="text-lg font-semibold">AI Insights</h3>
             </div>
-            <div className="space-y-4">
-              <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                <h4 className="font-medium text-blue-400 mb-2">Portfolio Diversification</h4>
-                <p className="text-gray-300 text-sm">
+            <div className="space-y-3 md:space-y-4">
+              <div className="p-3 md:p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                <h4 className="font-medium text-blue-400 mb-2 text-sm md:text-base">Portfolio Diversification</h4>
+                <p className="text-gray-300 text-xs md:text-sm">
                   Your portfolio shows a strong tech sector bias. Consider diversifying into other sectors to reduce risk.
                 </p>
               </div>
-              <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
-                <h4 className="font-medium text-green-400 mb-2">Growth Opportunity</h4>
-                <p className="text-gray-300 text-sm">
+              <div className="p-3 md:p-4 bg-green-500/10 rounded-lg border border-green-500/20">
+                <h4 className="font-medium text-green-400 mb-2 text-sm md:text-base">Growth Opportunity</h4>
+                <p className="text-gray-300 text-xs md:text-sm">
                   AAPL and MSFT are showing strong momentum. Consider increasing positions during market dips.
                 </p>
               </div>
-              <div className="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-                <h4 className="font-medium text-yellow-400 mb-2">Risk Alert</h4>
-                <p className="text-gray-300 text-sm">
+              <div className="p-3 md:p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+                <h4 className="font-medium text-yellow-400 mb-2 text-sm md:text-base">Risk Alert</h4>
+                <p className="text-gray-300 text-xs md:text-sm">
                   Crypto exposure is relatively high. Monitor market conditions and consider rebalancing.
                 </p>
               </div>
@@ -262,20 +314,31 @@ const Portfolio: React.FC = () => {
           </div>
         </div>
 
-        {/* Holdings Table */}
+        {/* Holdings Section */}
         <div className="bg-gray-800 rounded-xl border border-gray-700">
-          <div className="p-6 border-b border-gray-700">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+          <div className="p-4 md:p-6 border-b border-gray-700">
+            <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center">
               <div>
                 <h2 className="text-xl font-bold mb-1">Holdings</h2>
                 <p className="text-gray-400 text-sm">Manage your investment portfolio</p>
               </div>
-              <div className="flex items-center space-x-4">
+              
+              {/* Mobile Filters Button */}
+              <button
+                className="md:hidden flex items-center justify-between w-full bg-gray-700 px-4 py-2 rounded-lg"
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+              >
+                <span className="text-sm">Filters & Actions</span>
+                <ChevronRight className={`h-4 w-4 transition-transform ${showMobileFilters ? 'rotate-90' : ''}`} />
+              </button>
+              
+              {/* Desktop Actions */}
+              <div className={`flex-col space-y-3 md:flex-row md:items-center md:space-x-4 md:space-y-0 ${showMobileFilters ? 'flex' : 'hidden md:flex'}`}>
                 <div className="relative">
                   <select
                     value={selectedPortfolio}
                     onChange={(e) => setSelectedPortfolio(e.target.value)}
-                    className="appearance-none bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full md:w-auto appearance-none bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="all">All Portfolios</option>
                     {mockPortfolios.map(p => (
@@ -284,11 +347,11 @@ const Portfolio: React.FC = () => {
                   </select>
                   <Filter className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                 </div>
-                <button className="bg-gray-700 hover:bg-gray-600 text-sm px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+                <button className="w-full md:w-auto bg-gray-700 hover:bg-gray-600 text-sm px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors">
                   <Download className="h-4 w-4" />
                   <span>Export</span>
                 </button>
-                <button className="bg-blue-600 hover:bg-blue-700 text-sm px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
+                <button className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-sm px-4 py-2 rounded-lg flex items-center justify-center space-x-2 transition-colors">
                   <Plus className="h-4 w-4" />
                   <span>Add Holding</span>
                 </button>
@@ -296,7 +359,8 @@ const Portfolio: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="text-left text-gray-400 text-sm">
@@ -341,6 +405,13 @@ const Portfolio: React.FC = () => {
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden p-4 space-y-4">
+            {mockHoldings.map((holding) => (
+              <MobileHoldingCard key={holding.symbol} holding={holding} />
+            ))}
           </div>
         </div>
       </div>
