@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, Legend, Area } from 'recharts';
 import { Download, Plus, Brain, Filter, TrendingUp, TrendingDown, DollarSign, Percent, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 const mockPortfolios = [
@@ -23,15 +23,17 @@ const sectorData = [
   { name: 'Healthcare', value: 10, color: '#A78BFA' },
 ];
 
-const performanceData = Array.from({ length: 12 }, (_, i) => {
-  const baseValue = 100000;
+let performanceData = [];
+const baseValue = 100000;
+
+performanceData = Array.from({ length: 12 }, (_, i) => {
   const monthlyGrowth = Array.from({ length: i + 1 }, () => 1 + (Math.random() * 0.06 - 0.02));
   const value = monthlyGrowth.reduce((acc, growth) => acc * growth, baseValue);
   
   return {
     month: new Date(2024, i, 1).toLocaleString('default', { month: 'short' }),
     value: Math.round(value),
-    previousValue: i > 0 ? performanceData?.[i - 1]?.value : baseValue,
+    previousValue: i > 0 ? performanceData[i - 1]?.value : baseValue,
   };
 });
 
