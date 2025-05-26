@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  @apply bg-gray-900 text-gray-100;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced button animations */
+.btn-primary {
+  @apply relative overflow-hidden transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-gray-900;
+}
+
+.btn-primary::after {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-r from-blue-600/0 via-blue-600/30 to-blue-600/0 transform translate-x-[-100%] transition-transform duration-1000;
+}
+
+.btn-primary:hover::after {
+  @apply translate-x-[100%];
+}
+
+/* Card hover effects */
+.feature-card {
+  @apply transition-all duration-300 hover:transform hover:-translate-y-1;
+}
+
+/* Table responsiveness */
+.responsive-table {
+  @apply w-full overflow-x-auto;
+}
+
+@media (max-width: 768px) {
+  .asset-card {
+    @apply bg-gray-800 rounded-lg p-4 mb-4 border border-gray-700;
+  }
+  
+  .asset-card-header {
+    @apply flex justify-between items-center mb-2;
+  }
+  
+  .asset-card-body {
+    @apply space-y-2;
+  }
+  
+  .asset-stat {
+    @apply flex justify-between items-center;
+  }
+}
+
+/* Subtle track for scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500;
+}
+
+/* Add a custom color not in Tailwind by default */
+.bg-gray-750 {
+  background-color: #293548;
+}
+
+/* Enhanced table animations */
+.table-row-hover {
+  @apply transition-colors duration-200;
+}
+
+/* Gradient text animation */
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 8s ease infinite;
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
